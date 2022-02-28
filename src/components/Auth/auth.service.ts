@@ -1,34 +1,42 @@
-import {IUser} from "./dto/register.user.interface";
+import { IUser } from "./dto/register.user.interface";
 import UserModel from "../User/models/user.model";
 import TokenService from "../JWT/token.service";
-import {compare} from "bcrypt"
+import { compare } from "bcrypt";
 
+class AuthService {
+  async login(user: IUser) {
+    const { login, password } = user;
+    const candidate = await UserModel.findOne({ login }).exec();
 
-class AuthService{
-    async login(user:IUser) {
-        const candidate = await UserModel.findOne({login: user.login})
+    if (!candidate) return { status: 200, message: "The user is not found" };
 
-        if (!candidate) {
-            return {status: 200, message: "The user is not found"}
-        }
+    const checkingResponse = await this.checkPassword(
+      password,
+      candidate.password
+    );
 
-        const checkingResponse = await this.checkPassword(user.password, candidate.password);
+    if (!checkingResponse)
+      return { status: 400, message: "The password is false" };
 
-        if (!checkingResponse) return {status: 400, message: "The password is false"};
+    const tokens = await TokenService.generateTokens(user);
+    await TokenService.saveRefreshToken(tokens.RefToken, candidate._id);
 
-        const tokens = await TokenService.generateTokens(user);
+    return {
+      RefreshToken: tokens.RefToken,
+      AccesToken: tokens.AccToken,
+      status: 200,
+      message: "The login is the login is successful",
+    };
+  }
 
-        return {status: 200, message: "The login is the login is successful",tokens}
-    }
+  async logout(RefreshToken: string) {
+    const token = await TokenService.removeTokenFromDB(RefreshToken);
+    return token;
+  }
 
-    private async checkPassword(password: string, hash: string) {
-        return await compare(password, hash)
-    }
-
-    async logout(user:string){
-        return true
-    }
-
+  private async checkPassword(password: string, hash: string) {
+    return await compare(password, hash);
+  }
 }
 
-export default new AuthService()
+export default new AuthService();
