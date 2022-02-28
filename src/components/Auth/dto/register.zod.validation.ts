@@ -5,10 +5,10 @@ export function signDTO (user: IUser) {
     const registerSchema = z.object({
         login:z
             .string()
-            .email()
             .min(4)
-            .max(25)
-            .nonempty(),
+            .max(40)
+            .nonempty()
+            .email(),
         password:z
             .string()
             .nonempty()
@@ -17,8 +17,7 @@ export function signDTO (user: IUser) {
         name:z
             .string()
             .min(2)
-            .max(50)
-
+            .max(50),
     })
     const res = registerSchema.safeParse(user)
     if(!res.success) return null

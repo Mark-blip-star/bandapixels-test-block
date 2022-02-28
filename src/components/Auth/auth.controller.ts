@@ -1,27 +1,33 @@
 import {signDTO} from "./dto/register.zod.validation"
-import {IUser} from "./dto/register.user.interface";
-import UserService from "../User/user.service"
+import AuthService from "./auth.service";
 import {Request,Response} from "express"
 
 class AuthController{
-    async register(req:Request,res:Response):Promise<any>{
-        const {name,login,password}:any = req.body
-        const userData = signDTO({name,login,password})
-        if(!userData) return null
-        const user: IUser| null=  await UserService.createUser(userData);
-        if(!user){
-           res.status(400)
+    async login(req:Request,res:Response){
+        try{
+            const {name,login,password} = req.body
+            const userData = signDTO({name,login,password})
+            if(!userData) return res.json({"Error":"Invalid user Data"})
+            const userLogin = await AuthService.login(userData)
+            return res.status(userLogin.status).json(`${userLogin.message}`)
+        }catch(e){
+            throw e
         }
-        res.status(200).json({status:200,message:'User created'})
-
     }
 
-    async login(){
-
-    }
-
-    async logout(){
-
+    async logout(req:Request,res:Response){
+        try{
+            // const bearerHeader: string = req.headers['authorization'] || '';
+            // if(!bearerHeader){
+            //     res.json({"Error":"User is not auth"})
+            // }
+            // const bearer:string[] = bearerHeader.split(` `)
+            // await AuthService.logout(bearer[1]);
+            res.clearCookie(`RefreshToken`)
+            res.json({'Succes':`Logout succes` });
+        }catch (e){
+            throw e
+        }
     }
 }
 
