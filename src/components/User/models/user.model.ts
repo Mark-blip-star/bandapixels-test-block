@@ -24,4 +24,6 @@ const user = new Schema<IUser>({
   },
 });
 
+user.set(`timestamps`, true);
+
 export default connection.model<IUserModel>("User", user);

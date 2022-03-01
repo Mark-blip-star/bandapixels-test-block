@@ -17,5 +17,6 @@ const jwt = new Schema<JWT>({
     ref: "User",
   },
 });
+jwt.set(`timestamps`, true);
 
-export default connection.model<JWT>("TokenModel", jwt);
+export default connection.model<JWT>("tokens", jwt);
