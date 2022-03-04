@@ -1,36 +1,35 @@
-import { IUser } from "./dto/register.user.interface";
-import UserModel from "../User/models/user.model";
-import TokenService from "../JWT/token.service";
-import { compare } from "bcrypt";
-import { JWT } from "../JWT/models/jwt.refresh.model";
-import tokenModel from "../JWT/models/jwt.refresh.model";
+import { IUser } from './dto/register.user.interface';
+import UserModel from '../User/models/user.model';
+import TokenService from '../JWT/token.service';
+import { compare } from 'bcrypt';
+import { JWT } from '../JWT/models/jwt.refresh.model';
+
 class AuthService {
   async login(user: IUser) {
     const { login, password } = user;
     const candidate = await UserModel.findOne({ login }).exec();
 
-    if (!candidate) return { status: 200, message: "The user is not found" };
+    if (!candidate) return { status: 200, message: 'The user is not found' };
 
-    const checkingResponse = await this.checkPassword(
-      password,
-      candidate.password
-    );
+    const checkingResponse = await this.checkPassword(password, candidate.password);
 
-    if (!checkingResponse)
-      return { status: 400, message: "The password is false" };
+    if (!checkingResponse) return { status: 400, message: 'The password is false' };
 
-    const removeToken = TokenService.findAndRemoveToken(
-      candidate._id.toString()
-    );
-    if (!removeToken) return { status: 400, message: "bad request" };
-    const tokens = await TokenService.generateTokens(user);
+    const removeToken = TokenService.findAndRemoveToken(candidate._id.toString());
+
+    if (!removeToken) return { status: 400, message: 'bad request' };
+    const payload = {
+      login: candidate.login,
+      _id: candidate._id,
+    };
+    const tokens = await TokenService.generateTokens(payload);
     await TokenService.saveRefreshToken(tokens.RefToken, candidate._id);
 
     return {
       RefreshToken: tokens.RefToken,
       AccToken: tokens.AccToken,
       status: 200,
-      message: "The login is the login is successful",
+      message: 'The login is the login is successful',
     };
   }
 
@@ -44,15 +43,11 @@ class AuthService {
   }
 
   async refresh(RefreshToken: string) {
-    const validateResult = await TokenService.validateRefreshToken(
-      RefreshToken
-    );
-    const tokenFromDB: JWT | null = await TokenService.findTokenInDb(
-      RefreshToken
-    );
+    const validateResult = await TokenService.validateRefreshToken(RefreshToken);
+    const tokenFromDB: JWT | null = await TokenService.findTokenInDb(RefreshToken);
 
     if (!validateResult || !tokenFromDB) {
-      return { status: 400, message: "Invalid Token" };
+      return { status: 400, message: 'Invalid Token' };
     }
     const userID = tokenFromDB.user.toString();
     const tokens = await TokenService.generateTokens({ userID });
@@ -62,7 +57,7 @@ class AuthService {
       RefreshToken: tokens.RefToken,
       AccesToken: tokens.AccToken,
       status: 200,
-      message: "Tokens generation is ok",
+      message: 'Tokens generation is ok',
     };
   }
 }

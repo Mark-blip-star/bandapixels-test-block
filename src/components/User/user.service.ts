@@ -1,7 +1,7 @@
-import * as bcrypt from "bcrypt";
-import TokenService from "../JWT/token.service";
-import { IUser } from "../Auth/dto/register.user.interface";
-import UserModel from "./models/user.model";
+import * as bcrypt from 'bcrypt';
+import TokenService from '../JWT/token.service';
+import { IUser } from '../Auth/dto/register.user.interface';
+import UserModel from './models/user.model';
 
 class UserService {
   async createUser(userDTO: IUser): Promise<any> {
@@ -9,8 +9,7 @@ class UserService {
     const hashPass = await bcrypt.hash(password, 4);
     const candidate = await UserModel.findOne({ login });
 
-    if (candidate)
-      return { status: 409, message: "The user is already exists" };
+    if (candidate) return { status: 409, message: 'The user is already exists' };
 
     const user = await UserModel.create({ name, login, password: hashPass });
 
@@ -21,7 +20,7 @@ class UserService {
 
     return {
       status: 201,
-      message: "The user is created",
+      message: 'The user is created',
       tokens,
     };
   }

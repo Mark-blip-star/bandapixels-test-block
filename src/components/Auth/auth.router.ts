@@ -1,6 +1,6 @@
-import { Router } from "express";
-import AuthController from "./auth.controller";
-import { authCheck } from "./middleweares/auth.check";
+import { Router } from 'express';
+import AuthController from './auth.controller';
+import { authCheck } from './middleweares/auth.check';
 const router: Router = Router();
 
 router.post(`/login`, AuthController.login);
